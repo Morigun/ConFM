@@ -1,0 +1,6 @@
+D:\Проекты\MSVS\C#\ConFM\ConFM\bin\Debug\ConFM.exe.config
+D:\Проекты\MSVS\C#\ConFM\ConFM\bin\Debug\ConFM.exe
+D:\Проекты\MSVS\C#\ConFM\ConFM\bin\Debug\ConFM.pdb
+D:\Проекты\MSVS\C#\ConFM\ConFM\obj\Debug\ConFM.csprojResolveAssemblyReference.cache
+D:\Проекты\MSVS\C#\ConFM\ConFM\obj\Debug\ConFM.exe
+D:\Проекты\MSVS\C#\ConFM\ConFM\obj\Debug\ConFM.pdb
