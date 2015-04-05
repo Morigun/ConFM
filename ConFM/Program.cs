@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Diagnostics;
 using System.IO;
 
 namespace ConFM
@@ -36,6 +37,7 @@ namespace ConFM
                         Console.WriteLine(" cd [Name_directory] - Переход в директорию;");
                         Console.WriteLine(" cd.. - Перейти в каталог выше;");
                         Console.WriteLine(" dir_files - Просмотр файлов в каталоге;");
+                        Console.WriteLine(" run - Запустить приложение;");
                         Console.WriteLine(" exit - Выход из программы;");
                         break;
                     case "DIR_ROOT" :                        
@@ -47,6 +49,17 @@ namespace ConFM
                     case "DIR_FILES":
                         DIR(sTecDir, true);
                         break;  
+                    /*case "RUN":
+                        switch(RunOutApp(sTecDir))
+                        {
+                            case eError.Other:
+                                Console.WriteLine("Ошибка");
+                                break;
+                            case eError.OK:
+                                Console.WriteLine("Приложение запущено.");
+                                break;
+                        }
+                        break;*/
                     case "EXIT":
                         Environment.Exit(0);
                         break;
@@ -144,6 +157,20 @@ namespace ConFM
             catch(System.IO.DirectoryNotFoundException ex)
             {
                 return eError.NfoundEx;
+            }
+            catch(Exception ex)
+            {
+                Console.WriteLine(ex.ToString());
+                return eError.Other;
+            }
+        }
+
+        static eError RunOutApp(string sPathApp)
+        {
+            try
+            {
+                Process.Start(sPathApp);
+                return eError.OK;
             }
             catch(Exception ex)
             {
