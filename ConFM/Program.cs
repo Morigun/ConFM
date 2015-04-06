@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
+using System.Globalization;
 using System.Threading.Tasks;
 using System.Diagnostics;
 using System.IO;
@@ -28,41 +30,49 @@ namespace ConFM
             while(true)
             {
                 sCon = Console.ReadLine();
-                switch (sCon.ToUpper())
+                string pattern = @"^[a-zA-Z]+_*[a-zA-Z]*";
+                /*Иди через разветвление после _*/
+                Match m = Regex.Match(sCon, pattern);
+                while (m.Success)
                 {
-                    case "HELP":
-                        Console.WriteLine("Привет, это начальная версия моей программы");
-                        Console.WriteLine(" dir_root - Просмотреть корневой каталог;");
-                        Console.WriteLine(" dir - Просмотреть текущий каталог;");
-                        Console.WriteLine(" cd [Name_directory] - Переход в директорию;");
-                        Console.WriteLine(" cd.. - Перейти в каталог выше;");
-                        Console.WriteLine(" dir_files - Просмотр файлов в каталоге;");
-                        Console.WriteLine(" run - Запустить приложение;");
-                        Console.WriteLine(" exit - Выход из программы;");
-                        break;
-                    case "DIR_ROOT" :                        
-                        DIR(sRoot);
-                        break;
-                    case "DIR":                        
-                        DIR(sTecDir);
-                        break;  
-                    case "DIR_FILES":
-                        DIR(sTecDir, true);
-                        break;  
-                    /*case "RUN":
-                        switch(RunOutApp(sTecDir))
-                        {
-                            case eError.Other:
-                                Console.WriteLine("Ошибка");
-                                break;
-                            case eError.OK:
-                                Console.WriteLine("Приложение запущено.");
-                                break;
-                        }
-                        break;*/
-                    case "EXIT":
-                        Environment.Exit(0);
-                        break;
+                    switch (m.Value.ToUpper())
+                    {
+                        case "HELP":
+                            Console.WriteLine("Привет, это начальная версия моей программы");
+                            Console.WriteLine(" dir_root - Просмотреть корневой каталог;");
+                            Console.WriteLine(" dir - Просмотреть текущий каталог;");
+                            Console.WriteLine(" cd [Name_directory] - Переход в директорию;");
+                            Console.WriteLine(" cd.. - Перейти в каталог выше;");
+                            Console.WriteLine(" dir_files - Просмотр файлов в каталоге;");
+                            Console.WriteLine(" run - Запустить приложение;");
+                            Console.WriteLine(" exit - Выход из программы;");
+                            break;
+                        case "DIR_ROOT":
+                            DIR(sRoot);
+                            break;
+                        case "DIR":
+                            DIR(sTecDir);
+                            break;
+                        case "DIR_FILES":
+                            DIR(sTecDir, true);
+                            break;
+                        case "RUN":
+                            sTecDir += sCon.Substring(m.Value.Length + 1);
+                            switch(RunOutApp(sTecDir))
+                            {
+                                case eError.Other:
+                                    Console.WriteLine("Ошибка");
+                                    break;
+                                case eError.OK:
+                                    Console.WriteLine("Приложение запущено.");
+                                    break;
+                            }
+                            break;
+                        case "EXIT":
+                            Environment.Exit(0);
+                            break;
+                    }
+                    m = m.NextMatch();
                 }
                 if (sCon.Length > 3)
                 {                    
