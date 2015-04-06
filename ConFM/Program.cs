@@ -30,7 +30,9 @@ namespace ConFM
             while(true)
             {
                 sCon = Console.ReadLine();
-                string pattern = @"^[a-zA-Z]+_*[a-zA-Z]*";
+                string pattern = @"^[a-zA-Z]+[\s,\.\.]*";
+                string otherPat = @"_[a-zA-Z]+";
+                string sCdPat = @"[a-zA-Zа-яА-Я]+";
                 /*Иди через разветвление после _*/
                 Match m = Regex.Match(sCon, pattern);
                 while (m.Success)
@@ -47,14 +49,81 @@ namespace ConFM
                             Console.WriteLine(" run - Запустить приложение;");
                             Console.WriteLine(" exit - Выход из программы;");
                             break;
-                        case "DIR_ROOT":
-                            DIR(sRoot);
-                            break;
                         case "DIR":
-                            DIR(sTecDir);
+                            Match m2 = Regex.Match(sCon.Substring(3).ToUpper(), otherPat);
+                            if (m2.Success)
+                            {
+                                switch(m2.Value.ToUpper())
+                                {
+                                    case "_ROOT" :
+                                        DIR(sRoot);
+                                        break;
+                                    case "_FILES":
+                                        DIR(sTecDir, true);
+                                        break;
+                                }
+                            }
+                            else
+                            {
+                                DIR(sTecDir);
+                            }
                             break;
-                        case "DIR_FILES":
-                            DIR(sTecDir, true);
+                        case "CD..":
+                            Console.WriteLine("TUT..");
+                            try
+                            {
+                                sTecDir = Directory.GetParent(sTecDir.Substring(0, sTecDir.Length-1)).ToString();
+                                DIR(sTecDir);
+                            }
+                            catch (System.NullReferenceException)
+                            {
+                                Console.WriteLine("Нет директории выше.");
+                            }
+                            break;
+                        case "CD ":
+                            Match m3 = Regex.Match(sCon.Substring(2).ToUpper(), sCdPat);
+                            string sTmp;
+                            if(m3.Success)
+                            {
+                                sTmp = m3.Value;
+                                if(!LastSymb(sTmp,@"\"))
+                                {
+                                     sTmp += @"\";
+                                }
+                                try
+                                {
+                                    if (sTecDir != sRoot)
+                                        sTecDir = sTecDir + sTmp;
+                                    else
+                                        sTecDir = sTecDir + sTmp;
+                                    switch (DIR(sTecDir))
+                                    {
+                                        case eError.ArgEx:
+                                            sTecDir = sTmp;
+                                            DIR(sTecDir);
+                                            break;
+                                        case eError.NSEx:
+                                            sTecDir = sTmp;
+                                            DIR(sTecDir);
+                                            break;
+                                        case eError.NfoundEx:
+                                            Console.WriteLine("Проверьте корректность пути: {0}", sTecDir);
+                                            break;
+                                        case eError.Other:
+                                            Console.WriteLine("Необработанное исключение");
+                                            break;
+                                    }
+                                }
+                                catch (System.NotSupportedException ex)
+                                {
+                                    sTecDir = sTmp;
+                                    DIR(sTecDir);
+                                }
+                                catch (Exception ex)
+                                {
+                                    Console.WriteLine("Нет такого пути");
+                                }
+                            }
                             break;
                         case "RUN":
                             sTecDir += sCon.Substring(m.Value.Length + 1);
@@ -71,10 +140,13 @@ namespace ConFM
                         case "EXIT":
                             Environment.Exit(0);
                             break;
+                        default:
+                            Console.WriteLine("DEF {0}1",m.Value.ToUpper());
+                            break;
                     }
                     m = m.NextMatch();
                 }
-                if (sCon.Length > 3)
+                /*if (sCon.Length > 3)
                 {                    
                     if (sCon.Substring(0, 3).ToUpper() == "CD ")
                     {
@@ -126,7 +198,7 @@ namespace ConFM
                             Console.WriteLine("Нет директории выше.");
                         }
                     }
-                }
+                }*/
                 Console.Write("{0}>",sTecDir);
             }
         }
