@@ -7,6 +7,8 @@ using System.Globalization;
 using System.Threading.Tasks;
 using System.Diagnostics;
 using System.IO;
+using System.Security.Principal;
+using System.Security.AccessControl;
 
 namespace ConFM
 {
@@ -25,6 +27,8 @@ namespace ConFM
         const string sRoot = @"C:\";
         static string[] sPathsStr;
         static string sTecDir;
+        static string sTmpPath;
+        static string sOnRun;
         static void Main(string[] args)
         {
             sTecDir = sRoot;
@@ -33,7 +37,7 @@ namespace ConFM
                 sCon = Console.ReadLine();
                 string pattern = @"^[a-zA-Z]+[\s,\.\.]*";
                 string otherPat = @"_[a-zA-Z]+";
-                string sCdPat = @"[a-zA-Zа-яА-Я\s\:]+";
+                sTmpPath = sTecDir;
                 /*Иди через разветвление после _*/
                 Match m = Regex.Match(sCon, pattern);
                 while (m.Success)
@@ -47,6 +51,7 @@ namespace ConFM
                             Console.WriteLine(" cd [Name_directory] - Переход в директорию;");
                             Console.WriteLine(" cd.. - Перейти в каталог выше;");
                             Console.WriteLine(" dir_files - Просмотр файлов в каталоге;");
+                            Console.WriteLine(" dir_ld - Просмотр логических дисков;");
                             Console.WriteLine(" run - Запустить приложение;");
                             Console.WriteLine(" exit - Выход из программы;");
                             break;
@@ -72,7 +77,7 @@ namespace ConFM
                         case "CD..":
                             try
                             {
-                                sTecDir = Directory.GetParent(sTecDir.Substring(0, sTecDir.Length-1)).ToString();
+                                sTecDir = Directory.GetParent(sTecDir.Substring(0, sTecDir.Length-1)).ToString() + @"\";
                                 DIR(sTecDir);
                             }
                             catch (System.NullReferenceException)
@@ -81,58 +86,54 @@ namespace ConFM
                             }
                             break;
                         case "CD ":
-                            Match m3 = Regex.Match(sCon.Substring(3).ToUpper(), sCdPat);
                             string sTmp;
-                            if(m3.Success)
+                            sTmp = sCon.Substring(3).ToUpper();
+                            if(!LastSymb(sTmp,@"\"))
                             {
-                                sTmp = m3.Value;
-                                if(!LastSymb(sTmp,@"\"))
+                                 sTmp += @"\";
+                            }
+                            try
+                            {
+                                if (sTecDir != sRoot)
+                                    sTecDir = sTecDir + sTmp;
+                                else
+                                    sTecDir = sTecDir + sTmp;
+                                switch (DIR(sTecDir))
                                 {
-                                     sTmp += @"\";
-                                }
-                                try
-                                {
-                                    if (sTecDir != sRoot)
-                                        sTecDir = sTecDir + sTmp;
-                                    else
-                                        sTecDir = sTecDir + sTmp;
-                                    switch (DIR(sTecDir))
-                                    {
-                                        case eError.ArgEx:
-                                            sTecDir = sTmp;
-                                            DIR(sTecDir);
-                                            break;
-                                        case eError.NSEx:
-                                            sTecDir = sTmp;
-                                            DIR(sTecDir);
-                                            break;
-                                        case eError.NfoundEx:
-                                            sTecDir = Directory.GetParent(sTecDir.Substring(0, sTecDir.Length - 1)).ToString();
-                                            Console.WriteLine("Проверьте корректность пути: {0}", sTecDir);
-                                            break;
-                                        case eError.AccessEx:
-                                            sTecDir = Directory.GetParent(sTecDir.Substring(0, sTecDir.Length - 1)).ToString();
-                                            Console.WriteLine("Нет доступа до данной папки, запустите приложение под Администратором");
-                                            break;
-                                        case eError.Other:
-                                            Console.WriteLine("Необработанное исключение");
-                                            break;
-                                    }
-                                }
-                                catch (System.NotSupportedException ex)
-                                {
-                                    sTecDir = sTmp;
-                                    DIR(sTecDir);
-                                }
-                                catch (Exception ex)
-                                {
-                                    Console.WriteLine("Нет такого пути");
+                                    case eError.ArgEx:
+                                        sTecDir = sTmp;
+                                        DIR(sTecDir);
+                                        break;
+                                    case eError.NSEx:
+                                        sTecDir = sTmp;
+                                        DIR(sTecDir);
+                                        break;
+                                    case eError.NfoundEx:                                        
+                                        Console.WriteLine("Проверьте корректность пути: {0}", sTecDir);
+                                        sTecDir = sTmpPath;
+                                        break;
+                                    case eError.AccessEx:                                            
+                                        Console.WriteLine("Нет доступа до папки {0}", sTecDir);
+                                        sTecDir = sTmpPath;
+                                        break;
+                                    case eError.Other:
+                                        Console.WriteLine("Необработанное исключение");
+                                        break;
                                 }
                             }
+                            catch (System.NotSupportedException ex)
+                            {
+                                sTecDir = sTmp;
+                                DIR(sTecDir);
+                            }
+                            catch (Exception ex)
+                            {
+                                Console.WriteLine("Нет такого пути");
+                            }
                             break;
-                        case "RUN":
-                            sTecDir += sCon.Substring(m.Value.Length + 1);
-                            switch(RunOutApp(sTecDir))
+                        case "RUN ":                            
+                            sOnRun = String.Format("{0}{1}", sTecDir, sCon.Substring(m.Value.Length));
+                            switch (RunOutApp(sOnRun))
                             {
                                 case eError.Other:
                                     Console.WriteLine("Ошибка");
@@ -224,6 +225,7 @@ namespace ConFM
                 return true;
             }
             return false;
-        }
+        }       
+        
     }
 }
