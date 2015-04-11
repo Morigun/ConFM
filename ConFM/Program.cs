@@ -21,6 +21,7 @@ namespace ConFM
             NSEx,
             NfoundEx,
             AccessEx,
+            Win32Ex,
             Other
         }
         static string sCon;
@@ -52,6 +53,7 @@ namespace ConFM
                             Console.WriteLine(" cd.. - Перейти в каталог выше;");
                             Console.WriteLine(" dir_files - Просмотр файлов в каталоге;");
                             Console.WriteLine(" dir_ld - Просмотр логических дисков;");
+                            Console.WriteLine(" dir_process - Просмотр списка процессов;");
                             Console.WriteLine(" run - Запустить приложение;");
                             Console.WriteLine(" exit - Выход из программы;");
                             break;
@@ -67,12 +69,21 @@ namespace ConFM
                                     case "_FILES":
                                         DIR(sTecDir, true);
                                         break;
+                                    case "_LD":
+                                        DIR_LD();
+                                        break;
+                                    case "_PROCESS":
+                                        DIR_PROCESS();
+                                        break;
                                 }
                             }
                             else
                             {
                                 DIR(sTecDir);
                             }
+                            break;
+                        case "DIR ":
+                            
                             break;
                         case "CD..":
                             try
@@ -137,6 +148,9 @@ namespace ConFM
                             {
                                 case eError.Other:
                                     Console.WriteLine("Ошибка");
+                                    break;
+                                case eError.Win32Ex:
+                                    Console.WriteLine("Проверь корректность введеного имени файла. Файл с именем {0} не найден.", sOnRun);
                                     break;
                                 case eError.OK:
                                     Console.WriteLine("Приложение запущено.");
@@ -204,12 +218,35 @@ namespace ConFM
             }
         }
 
+        static eError DIR_LD()
+        {
+            sPathsStr = Environment.GetLogicalDrives();
+            foreach (string p in sPathsStr)
+            {
+                Console.WriteLine("\t {0}", p);
+            }
+            return eError.OK;
+        }
+        static eError DIR_PROCESS()
+        {
+            Process[] procList = Process.GetProcesses();
+            foreach (Process p in procList)
+            {
+                Console.WriteLine("\t {0}", p.ProcessName);
+            }
+            return eError.OK;
+        }
+
         static eError RunOutApp(string sPathApp)
         {
             try
             {
                 Process.Start(sPathApp);
                 return eError.OK;
+            }
+            catch(System.ComponentModel.Win32Exception ex)
+            {
+                return eError.Win32Ex;
             }
             catch(Exception ex)
             {
