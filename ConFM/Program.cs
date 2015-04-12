@@ -13,20 +13,10 @@ using System.Security.AccessControl;
 namespace ConFM
 {
     class Program
-    {
-        enum eError
-        {
-            OK,
-            ArgEx,
-            NSEx,
-            NfoundEx,
-            AccessEx,
-            Win32Ex,
-            Other
-        }
+    {        
         static string sCon;
         const string sRoot = @"C:\";
-        static string[] sPathsStr;
+        public static string[] sPathsStr;
         static string sTecDir;
         static string sTmpPath;
         static string sOnRun;
@@ -37,7 +27,7 @@ namespace ConFM
             {
                 sCon = Console.ReadLine();
                 string pattern = @"^[a-zA-Z]+[\s,\.\.]*";
-                string otherPat = @"_[a-zA-Z]+";
+                string otherPat = @"_[a-zA-Z]+\s?";
                 sTmpPath = sTecDir;
                 /*Иди через разветвление после _*/
                 Match m = Regex.Match(sCon, pattern);
@@ -46,16 +36,17 @@ namespace ConFM
                     switch (m.Value.ToUpper())
                     {
                         case "HELP":
-                            Console.WriteLine("Привет, это начальная версия моей программы");
-                            Console.WriteLine(" dir_root - Просмотреть корневой каталог;");
-                            Console.WriteLine(" dir - Просмотреть текущий каталог;");
-                            Console.WriteLine(" cd [Name_directory] - Переход в директорию;");
-                            Console.WriteLine(" cd.. - Перейти в каталог выше;");
-                            Console.WriteLine(" dir_files - Просмотр файлов в каталоге;");
-                            Console.WriteLine(" dir_ld - Просмотр логических дисков;");
-                            Console.WriteLine(" dir_process - Просмотр списка процессов;");
-                            Console.WriteLine(" run - Запустить приложение;");
-                            Console.WriteLine(" exit - Выход из программы;");
+                            Console.WriteLine("Основные команды: ");
+                            Console.WriteLine("\t DIR_ROOT - Просмотреть корневой каталог C:\\;");
+                            Console.WriteLine("\t DIR - Просмотреть текущий каталог;");
+                            Console.WriteLine("\t DIR_FILES - Просмотр файлов в каталоге;");
+                            Console.WriteLine("\t DIR_LD - Просмотр логических дисков;");
+                            Console.WriteLine("\t DIR_PROCESS - Просмотр списка процессов;");
+                            Console.WriteLine("\t DIR_EXT [NAME EXT] - поиск по расширению;");
+                            Console.WriteLine("\t CD [NAME_DIRECTORY] - Переход в директорию;");
+                            Console.WriteLine("\t CD.. - Перейти в каталог выше;");
+                            Console.WriteLine("\t RUN [NAME_FILE] - Запустить приложение;");
+                            Console.WriteLine("\t EXIT - Выход из программы;");
                             break;
                         case "DIR":
                             Match m2 = Regex.Match(sCon.Substring(3).ToUpper(), otherPat);
@@ -64,22 +55,31 @@ namespace ConFM
                                 switch(m2.Value.ToUpper())
                                 {
                                     case "_ROOT" :
-                                        DIR(sRoot);
+                                        DIR_CLASS.DIR(sRoot);
                                         break;
                                     case "_FILES":
-                                        DIR(sTecDir, true);
+                                        DIR_CLASS.DIR(sTecDir, true);
                                         break;
                                     case "_LD":
-                                        DIR_LD();
+                                        if (DIR_CLASS.DIR_LD() != DIR_CLASS.eError.OK)
+                                            Console.WriteLine("Ошибка");
                                         break;
                                     case "_PROCESS":
-                                        DIR_PROCESS();
+                                        if (DIR_CLASS.DIR_PROCESS() != DIR_CLASS.eError.OK)
+                                            Console.WriteLine("Ошибка");
+                                        break;
+                                    case "_EXT ":
+                                        if (DIR_CLASS.DIR_EXT(sTecDir, sCon.ToUpper().Substring(8)) != DIR_CLASS.eError.OK)
+                                            Console.WriteLine("Ошибка {0}", sCon.ToUpper().Substring(8));
+                                        break;
+                                    case "IN_FILE ":
+                                        
                                         break;
                                 }
                             }
                             else
                             {
-                                DIR(sTecDir);
+                                DIR_CLASS.DIR(sTecDir);
                             }
                             break;
                         case "DIR ":
@@ -89,7 +89,7 @@ namespace ConFM
                             try
                             {
                                 sTecDir = Directory.GetParent(sTecDir.Substring(0, sTecDir.Length-1)).ToString() + @"\";
-                                DIR(sTecDir);
+                                DIR_CLASS.DIR(sTecDir);
                             }
                             catch (System.NullReferenceException)
                             {
@@ -99,7 +99,7 @@ namespace ConFM
                         case "CD ":
                             string sTmp;
                             sTmp = sCon.Substring(3).ToUpper();
-                            if(!LastSymb(sTmp,@"\"))
+                            if(!DIR_CLASS.LastSymb(sTmp,@"\"))
                             {
                                  sTmp += @"\";
                             }
@@ -109,25 +109,25 @@ namespace ConFM
                                     sTecDir = sTecDir + sTmp;
                                 else
                                     sTecDir = sTecDir + sTmp;
-                                switch (DIR(sTecDir))
+                                switch (DIR_CLASS.DIR(sTecDir))
                                 {
-                                    case eError.ArgEx:
+                                    case DIR_CLASS.eError.ArgEx:
                                         sTecDir = sTmp;
-                                        DIR(sTecDir);
+                                        DIR_CLASS.DIR(sTecDir);
                                         break;
-                                    case eError.NSEx:
+                                    case DIR_CLASS.eError.NSEx:
                                         sTecDir = sTmp;
-                                        DIR(sTecDir);
+                                        DIR_CLASS.DIR(sTecDir);
                                         break;
-                                    case eError.NfoundEx:                                        
+                                    case DIR_CLASS.eError.NfoundEx:                                        
                                         Console.WriteLine("Проверьте корректность пути: {0}", sTecDir);
                                         sTecDir = sTmpPath;
                                         break;
-                                    case eError.AccessEx:                                            
+                                    case DIR_CLASS.eError.AccessEx:                                            
                                         Console.WriteLine("Нет доступа до папки {0}", sTecDir);
                                         sTecDir = sTmpPath;
                                         break;
-                                    case eError.Other:
+                                    case DIR_CLASS.eError.Other:
                                         Console.WriteLine("Необработанное исключение");
                                         break;
                                 }
@@ -135,7 +135,7 @@ namespace ConFM
                             catch (System.NotSupportedException ex)
                             {
                                 sTecDir = sTmp;
-                                DIR(sTecDir);
+                                DIR_CLASS.DIR(sTecDir);
                             }
                             catch (Exception ex)
                             {
@@ -144,15 +144,15 @@ namespace ConFM
                             break;
                         case "RUN ":                            
                             sOnRun = String.Format("{0}{1}", sTecDir, sCon.Substring(m.Value.Length));
-                            switch (RunOutApp(sOnRun))
+                            switch (RUN_CLASS.RunOutApp(sOnRun))
                             {
-                                case eError.Other:
+                                case RUN_CLASS.eError.Other:
                                     Console.WriteLine("Ошибка");
                                     break;
-                                case eError.Win32Ex:
+                                case RUN_CLASS.eError.Win32Ex:
                                     Console.WriteLine("Проверь корректность введеного имени файла. Файл с именем {0} не найден.", sOnRun);
                                     break;
-                                case eError.OK:
+                                case RUN_CLASS.eError.OK:
                                     Console.WriteLine("Приложение запущено.");
                                     break;
                             }
@@ -168,101 +168,6 @@ namespace ConFM
                 }                
                 Console.Write("{0}>",sTecDir);
             }
-        }
-
-        static eError DIR(string path, bool file = false)
-        {
-            try
-            {
-                if (!file)
-                {
-                    sPathsStr = Directory.GetDirectories(path);
-                    Console.WriteLine(path);
-                    foreach (string p in sPathsStr)
-                    {
-                        Console.WriteLine("\t {0}", p);
-                    }
-                    return eError.OK;
-                }
-                else
-                {
-                    sPathsStr = Directory.GetFiles(path);
-                    Console.WriteLine(path);
-                    foreach (string p in sPathsStr)
-                    {
-                        Console.WriteLine("\t {0}", p);
-                    }
-                    return eError.OK;
-                }
-            }
-            catch(System.ArgumentException ex)
-            {
-                return eError.ArgEx;
-            }
-            catch(System.NotSupportedException ex)
-            {
-                return eError.NSEx;
-            }
-            catch(System.IO.DirectoryNotFoundException ex)
-            {
-                return eError.NfoundEx;
-            }
-            catch(System.UnauthorizedAccessException Ex)
-            {
-                return eError.AccessEx;
-            }
-            catch(Exception ex)
-            {
-                Console.WriteLine(ex.ToString());
-                return eError.Other;
-            }
-        }
-
-        static eError DIR_LD()
-        {
-            sPathsStr = Environment.GetLogicalDrives();
-            foreach (string p in sPathsStr)
-            {
-                Console.WriteLine("\t {0}", p);
-            }
-            return eError.OK;
-        }
-        static eError DIR_PROCESS()
-        {
-            Process[] procList = Process.GetProcesses();
-            foreach (Process p in procList)
-            {
-                Console.WriteLine("\t {0}", p.ProcessName);
-            }
-            return eError.OK;
-        }
-
-        static eError RunOutApp(string sPathApp)
-        {
-            try
-            {
-                Process.Start(sPathApp);
-                return eError.OK;
-            }
-            catch(System.ComponentModel.Win32Exception ex)
-            {
-                return eError.Win32Ex;
-            }
-            catch(Exception ex)
-            {
-                Console.WriteLine(ex.ToString());
-                return eError.Other;
-            }
-        }
-
-        static bool LastSymb(string s, string sSymb)
-        {
-            if(s.Substring(s.Length-1, 1) == sSymb)
-            {
-                return true;
-            }
-            return false;
-        }       
-        
+        }   
     }
 }
