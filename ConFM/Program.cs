@@ -13,7 +13,18 @@ using System.Security.AccessControl;
 namespace ConFM
 {
     class Program
-    {        
+    {
+        public enum eError
+        {
+            OK,
+            ArgEx,
+            NSEx,
+            NfoundEx,
+            AccessEx,
+            Win32Ex,
+            Other
+        }
+
         static string sCon;
         const string sRoot = @"C:\";
         public static string[] sPathsStr;
@@ -45,6 +56,8 @@ namespace ConFM
                             Console.WriteLine("\t DIR_EXT [NAME EXT] - поиск по расширению;");
                             Console.WriteLine("\t CD [NAME_DIRECTORY] - Переход в директорию;");
                             Console.WriteLine("\t CD.. - Перейти в каталог выше;");
+                            Console.WriteLine("\t CREATE_FILE [NAME_FILE].[EXT] - Создать файл;");
+                            Console.WriteLine("\t DELETE_FILE [NAME_FILE].[EXT] - Удалить файл;");
                             Console.WriteLine("\t RUN [NAME_FILE] - Запустить приложение;");
                             Console.WriteLine("\t EXIT - Выход из программы;");
                             break;
@@ -61,15 +74,15 @@ namespace ConFM
                                         DIR_CLASS.DIR(sTecDir, true);
                                         break;
                                     case "_LD":
-                                        if (DIR_CLASS.DIR_LD() != DIR_CLASS.eError.OK)
+                                        if (DIR_CLASS.DIR_LD() != eError.OK)
                                             Console.WriteLine("Ошибка");
                                         break;
                                     case "_PROCESS":
-                                        if (DIR_CLASS.DIR_PROCESS() != DIR_CLASS.eError.OK)
+                                        if (DIR_CLASS.DIR_PROCESS() != eError.OK)
                                             Console.WriteLine("Ошибка");
                                         break;
                                     case "_EXT ":
-                                        if (DIR_CLASS.DIR_EXT(sTecDir, sCon.ToUpper().Substring(8)) != DIR_CLASS.eError.OK)
+                                        if (DIR_CLASS.DIR_EXT(sTecDir, sCon.ToUpper().Substring(8)) != eError.OK)
                                             Console.WriteLine("Ошибка {0}", sCon.ToUpper().Substring(8));
                                         break;
                                     case "IN_FILE ":
@@ -84,6 +97,30 @@ namespace ConFM
                             break;
                         case "DIR ":
                             
+                            break;
+                        case "CREATE":
+                            Match m3 = Regex.Match(sCon.Substring(6).ToUpper(), otherPat);
+                            if (m3.Success)
+                            {
+                                switch (m3.Value.ToUpper())
+                                {
+                                    case "_FILE ":
+                                        FILE_CLASS.Create_file(String.Format("{0}{1}", sTecDir, sCon.ToUpper().Substring(12)));
+                                        break;
+                                }
+                            }
+                            break;
+                        case "DELETE":
+                            Match m4 = Regex.Match(sCon.Substring(6).ToUpper(), otherPat);
+                            if (m4.Success)
+                            {
+                                switch (m4.Value.ToUpper())
+                                {
+                                    case "_FILE ":
+                                        FILE_CLASS.Delete_file(String.Format("{0}{1}", sTecDir, sCon.ToUpper().Substring(12)));
+                                        break;
+                                }
+                            }
                             break;
                         case "CD..":
                             try
@@ -111,23 +148,23 @@ namespace ConFM
                                     sTecDir = sTecDir + sTmp;
                                 switch (DIR_CLASS.DIR(sTecDir))
                                 {
-                                    case DIR_CLASS.eError.ArgEx:
+                                    case eError.ArgEx:
                                         sTecDir = sTmp;
                                         DIR_CLASS.DIR(sTecDir);
                                         break;
-                                    case DIR_CLASS.eError.NSEx:
+                                    case eError.NSEx:
                                         sTecDir = sTmp;
                                         DIR_CLASS.DIR(sTecDir);
                                         break;
-                                    case DIR_CLASS.eError.NfoundEx:                                        
+                                    case eError.NfoundEx:                                        
                                         Console.WriteLine("Проверьте корректность пути: {0}", sTecDir);
                                         sTecDir = sTmpPath;
                                         break;
-                                    case DIR_CLASS.eError.AccessEx:                                            
+                                    case eError.AccessEx:                                            
                                         Console.WriteLine("Нет доступа до папки {0}", sTecDir);
                                         sTecDir = sTmpPath;
                                         break;
-                                    case DIR_CLASS.eError.Other:
+                                    case eError.Other:
                                         Console.WriteLine("Необработанное исключение");
                                         break;
                                 }
@@ -146,13 +183,13 @@ namespace ConFM
                             sOnRun = String.Format("{0}{1}", sTecDir, sCon.Substring(m.Value.Length));
                             switch (RUN_CLASS.RunOutApp(sOnRun))
                             {
-                                case RUN_CLASS.eError.Other:
+                                case eError.Other:
                                     Console.WriteLine("Ошибка");
                                     break;
-                                case RUN_CLASS.eError.Win32Ex:
+                                case eError.Win32Ex:
                                     Console.WriteLine("Проверь корректность введеного имени файла. Файл с именем {0} не найден.", sOnRun);
                                     break;
-                                case RUN_CLASS.eError.OK:
+                                case eError.OK:
                                     Console.WriteLine("Приложение запущено.");
                                     break;
                             }

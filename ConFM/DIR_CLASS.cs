@@ -10,18 +10,8 @@ namespace ConFM
 {
     class DIR_CLASS
     {
-        public enum eError
-        {
-            OK,
-            ArgEx,
-            NSEx,
-            NfoundEx,
-            AccessEx,
-            Win32Ex,
-            Other
-        }
 
-        public static eError DIR(string path, bool file = false)
+        public static Program.eError DIR(string path, bool file = false)
         {
             
             try
@@ -34,7 +24,7 @@ namespace ConFM
                     {
                         Console.WriteLine("\t {0}", p);
                     }
-                    return eError.OK;
+                    return Program.eError.OK;
                 }
                 else
                 {
@@ -44,33 +34,33 @@ namespace ConFM
                     {
                         Console.WriteLine("\t {0}", p);
                     }
-                    return eError.OK;
+                    return Program.eError.OK;
                 }
             }
             catch (System.ArgumentException ex)
             {
-                return eError.ArgEx;
+                return Program.eError.ArgEx;
             }
             catch (System.NotSupportedException ex)
             {
-                return eError.NSEx;
+                return Program.eError.NSEx;
             }
             catch (System.IO.DirectoryNotFoundException ex)
             {
-                return eError.NfoundEx;
+                return Program.eError.NfoundEx;
             }
             catch (System.UnauthorizedAccessException Ex)
             {
-                return eError.AccessEx;
+                return Program.eError.AccessEx;
             }
             catch (Exception ex)
             {
                 Console.WriteLine(ex.ToString());
-                return eError.Other;
+                return Program.eError.Other;
             }
         }
 
-        public static eError DIR_LD()
+        public static Program.eError DIR_LD()
         {
             try
             {
@@ -79,15 +69,15 @@ namespace ConFM
                 {
                     Console.WriteLine("\t {0}", p);
                 }
-                return eError.OK;
+                return Program.eError.OK;
             }
             catch (Exception ex)
             {
                 Console.WriteLine("Ошибка {0}", ex.ToString());
-                return eError.Other;
+                return Program.eError.Other;
             }
         }
-        public static eError DIR_PROCESS()
+        public static Program.eError DIR_PROCESS()
         {
             try
             {
@@ -96,16 +86,16 @@ namespace ConFM
                 {
                     Console.WriteLine("\t {0}", p.ProcessName);
                 }
-                return eError.OK;
+                return Program.eError.OK;
             }
             catch (Exception ex)
             {
                 Console.WriteLine("Ошибка {0}", ex.ToString());
-                return eError.Other;
+                return Program.eError.Other;
             }
         }
 
-        public static eError DIR_EXT(string path, string sExt)
+        public static Program.eError DIR_EXT(string path, string sExt)
         {
             try
             {
@@ -114,12 +104,12 @@ namespace ConFM
                 {
                     Console.WriteLine("\t {0}", p);
                 }
-                return eError.OK;
+                return Program.eError.OK;
             }
             catch (System.ArgumentOutOfRangeException ex)
             {
                 Console.WriteLine(ex.ToString());
-                return eError.ArgEx;
+                return Program.eError.ArgEx;
             }
         }
 
