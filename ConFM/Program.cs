@@ -58,6 +58,8 @@ namespace ConFM
                             Console.WriteLine("\t CD.. - Перейти в каталог выше;");
                             Console.WriteLine("\t CREATE_FILE [NAME_FILE].[EXT] - Создать файл;");
                             Console.WriteLine("\t DELETE_FILE [NAME_FILE].[EXT] - Удалить файл;");
+                            Console.WriteLine("\t CREATE_DIR [NAME_DIR] - Создать папку;");
+                            Console.WriteLine("\t DELETE_DIR [NAME_DIR] - Удалить папку;");
                             Console.WriteLine("\t RUN [NAME_FILE] - Запустить приложение;");
                             Console.WriteLine("\t EXIT - Выход из программы;");
                             break;
@@ -107,6 +109,9 @@ namespace ConFM
                                     case "_FILE ":
                                         FILE_CLASS.Create_file(String.Format("{0}{1}", sTecDir, sCon.ToUpper().Substring(12)));
                                         break;
+                                    case "_DIR ":
+                                        FOLDER_CLASS.CREATE_DIR(String.Format("{0}{1}", sTecDir, sCon.ToUpper().Substring(11)));
+                                        break;
                                 }
                             }
                             break;
@@ -118,6 +123,9 @@ namespace ConFM
                                 {
                                     case "_FILE ":
                                         FILE_CLASS.Delete_file(String.Format("{0}{1}", sTecDir, sCon.ToUpper().Substring(12)));
+                                        break;
+                                    case "_DIR ":
+                                        FOLDER_CLASS.DELETE_DIR(String.Format("{0}{1}", sTecDir, sCon.ToUpper().Substring(11)));
                                         break;
                                 }
                             }
