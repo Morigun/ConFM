@@ -42,5 +42,28 @@ namespace ConFM
             }
             return Program.eError.OK;
         }
+
+        public static Program.eError MOVE_file(string sName, string sNewPath, bool bMove = false)
+        {
+            if(File.Exists(sNewPath))
+            {
+                Console.WriteLine("Файл существует, удалить? ");
+                sQ = Console.ReadLine();
+                if (sQ.ToUpper().Substring(0, 1) == "Y")
+                    File.Delete(sNewPath);
+                else
+                    bCreate = false;
+            }
+            if (bMove)
+            {
+                File.Move(sName, sNewPath);
+            }
+            else
+            {
+                File.Copy(sName, sNewPath);
+            }
+            
+            return Program.eError.OK;
+        }
     }
 }

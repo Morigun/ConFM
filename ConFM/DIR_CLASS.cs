@@ -9,8 +9,7 @@ using System.Threading.Tasks;
 namespace ConFM
 {
     class DIR_CLASS
-    {
-
+    {        
         public static Program.eError DIR(string path, bool file = false)
         {
             
@@ -121,7 +120,6 @@ namespace ConFM
             }
             return false;
         }
-
         
     }
 

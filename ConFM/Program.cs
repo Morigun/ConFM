@@ -31,6 +31,8 @@ namespace ConFM
         static string sTecDir;
         static string sTmpPath;
         static string sOnRun;
+        static string sPattern = " ";
+        static string[] substrings;
         static void Main(string[] args)
         {
             sTecDir = sRoot;
@@ -60,6 +62,8 @@ namespace ConFM
                             Console.WriteLine("\t DELETE_FILE [NAME_FILE].[EXT] - Удалить файл;");
                             Console.WriteLine("\t CREATE_DIR [NAME_DIR] - Создать папку;");
                             Console.WriteLine("\t DELETE_DIR [NAME_DIR] - Удалить папку;");
+                            Console.WriteLine("\t MOVE_DIR [NAME_DIR] [NEW_PATH_DIR] [C/M] - Переместить папку;");
+                            Console.WriteLine("\t MOVE_FILE [NAME_FILE] [NEW_PATH_FILE] - Переместить файл;");
                             Console.WriteLine("\t RUN [NAME_FILE] - Запустить приложение;");
                             Console.WriteLine("\t EXIT - Выход из программы;");
                             break;
@@ -128,6 +132,27 @@ namespace ConFM
                                         FOLDER_CLASS.DELETE_DIR(String.Format("{0}{1}", sTecDir, sCon.ToUpper().Substring(11)));
                                         break;
                                 }
+                            }
+                            break;
+                        case "MOVE":
+                            Match m5 = Regex.Match(sCon.Substring(4).ToUpper(), otherPat);
+                            if (m5.Success)
+                            {                                
+                                switch (m5.Value.ToUpper())
+                                {
+                                    case "_FILE ":
+                                        substrings = Regex.Split(sCon, sPattern);
+                                        FILE_CLASS.MOVE_file(String.Format("{0}{1}", sTecDir, substrings[1]), String.Format("{0}{1}", substrings[2], substrings[1]), substrings[3].ToUpper() == "M" ? true : false);
+                                        break;
+                                    case "_DIR ":
+                                        substrings = Regex.Split(sCon, sPattern);                                        
+                                        FOLDER_CLASS.MOVE_DIR(String.Format("{0}{1}", sTecDir, substrings[1]), String.Format("{0}{1}", substrings[2], substrings[1]), substrings[3].ToUpper() == "M" ? true : false);                                    
+                                        break;
+                                }
+                            }
+                            else
+                            {
+                                Console.WriteLine("Else");
                             }
                             break;
                         case "CD..":
